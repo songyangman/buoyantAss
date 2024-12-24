@@ -1,0 +1,30 @@
+#!/bin/bash
+
+mkdir 0
+
+echo blockMesh meshing...
+blockMesh > blockMesh.log
+
+topoSet
+subsetMesh -overwrite c0 -patch wall1
+
+
+echo Preparing 0 folder...
+rm -fr 0
+cp -r 0.org 0
+
+echo Setting the fields...
+setFields > setFields.log
+
+echo Creating piston wavemaker movement...
+cd constant
+python pistonWaveGen.py
+cd ..
+
+echo Decomposing case...
+decomposePar > decomposePar.log
+
+echo Running...
+mpirun -np 32 olaDyMFlow -parallel > olaDyMFlow.log
+
+echo Simulation complete.
